@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FeiShuMinuteDownloader (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "FeiShuMinuteDownloader (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
