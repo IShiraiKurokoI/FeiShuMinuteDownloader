@@ -12,6 +12,7 @@
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.Resources>
             <converters:TimestampToDateConverter x:Key="TimestampToDateConverter"/>
+            <converters:WidthConverter x:Key="WidthConverter"/>
         </Grid.Resources>
         <WebView2 x:Name="LoginWebview" 
                   Source="https://bytedance.feishu.cn/minutes/me" 
@@ -19,26 +20,25 @@
                   VerticalAlignment="Stretch" 
                   CoreWebView2Initialized="LoginWebview_CoreWebView2Initialized" 
                   NavigationCompleted="LoginWebview_NavigationCompleted"/>
-        <StackPanel Orientation="Horizontal" Margin="20,20,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="LightGray" Height="40">
-            <TextBlock Text="选择" Width="50" Margin="10,0"/>
-            <TextBlock Text="名称"  Margin="10,0"/>
-            <TextBlock Text="开始时间"  Margin="10,0"/>
-            <TextBlock Text="结束时间"  Margin="10,0"/>
-            <TextBlock Text="所有者"  Margin="10,0"/>
+        <StackPanel x:Name="RecordsListHeader" Visibility="Collapsed" Orientation="Horizontal" Margin="20,20,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="LightGray" Height="40">
+            <TextBlock Text="名称" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
+            <TextBlock Text="开始时间" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
+            <TextBlock Text="结束时间" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
+            <TextBlock Text="所有者" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
         </StackPanel>
-        <ListBox x:Name="RecordsList" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,60,20,60">
+        <ListBox x:Name="RecordsList" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,60,20,60">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="dataModels:Record">
                     <StackPanel Orientation="Horizontal" Margin="5">
-                        <CheckBox Width="50" Height="20" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind topic}" Width="200" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind start_time}" Width="200" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind stop_time}" Width="200" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind owner_name}" Width="200" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind topic}" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind start_time}" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind stop_time}" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind owner_name}" Margin="10,0"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button Content="Download Selected" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20" Click="DownloadSelected_Click"/>
+        <Button x:Name="DownloadAll" Visibility="Collapsed" Content="下载全部" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20" Click="DownloadAll_Click"/>
+        <Button x:Name="Logout" Visibility="Collapsed" Content="退出登录" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,20" Click="Logout_Click"/>
     </Grid>
 </Window>

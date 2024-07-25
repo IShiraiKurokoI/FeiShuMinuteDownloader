@@ -25,6 +25,10 @@ using Windows.UI.WebUI;
 using Microsoft.UI.Windowing;
 using Windows.Graphics;
 using System.Globalization;
+using System.Text;
+using System.Net.Http.Headers;
+using Microsoft.Windows.AppNotifications.Builder;
+using Microsoft.Windows.AppNotifications;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -88,23 +92,58 @@ namespace FeiShuMinuteDownloader
             }
         }
 
-        private void DownloadSelected_Click(object sender, RoutedEventArgs e)
+        private async void DownloadAll_Click(object sender, RoutedEventArgs e)
         {
-            var selectedRecords = new List<Record>();
-            foreach (var item in RecordsList.Items)
+            foreach(Record recordObject in Records)
             {
-                var container = RecordsList.ContainerFromItem(item) as FrameworkElement;
-                if (container != null)
+                string mediaUrl;
+                var baseAddress = new Uri($"https://{personalHost}");
+                using (var handler = new HttpClientHandler { UseCookies = false })
+                using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
                 {
-                    var checkBox = container.FindName("CheckBox") as CheckBox;
-                    if (checkBox != null && checkBox.IsChecked == true)
-                    {
-                        selectedRecords.Add(item as Record);
-                    }
+                    var message = new HttpRequestMessage(HttpMethod.Get, $"/minutes/api/status?object_token={recordObject.object_token}&language=zh_cn");
+                    message.Headers.Add("Cookie", cookie);
+                    message.Headers.Add("Referer", $"https://{personalHost}");
+                    var result = await client.SendAsync(message);
+                    result.EnsureSuccessStatusCode();
+                    var content = await result.Content.ReadAsStringAsync();
+                    RecordDetail response = JsonConvert.DeserializeObject<RecordDetail>(content);
+                    mediaUrl = response.data.video_info.video_download_url;
+                    logger.Debug($"\n视频/音频地址: {response.data.video_info.video_download_url}");
+                }
+
+                using (var handler = new HttpClientHandler { UseCookies = false })
+                using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+                {
+                    var message = new HttpRequestMessage(HttpMethod.Post, $"/minutes/api/export");
+                    message.Headers.Add("Cookie", cookie);
+                    message.Headers.Add("Referer", $"https://{personalHost}/minutes/{recordObject.object_token}");
+                    message.Headers.Add("bv-csrf-token", cookie.Split("bv_csrf_token=")[1].Split(";")[0]);
+
+                    message.Content = new StringContent($"add_speaker=true&add_timestamp=true&format=2&is_fluent=false&language=zh_cn&object_token={recordObject.object_token}&translate_lang=default", Encoding.UTF8, new MediaTypeHeaderValue("application/x-www-form-urlencoded"));
+                    var result = await client.SendAsync(message);
+                    result.EnsureSuccessStatusCode();
+                    var content = await result.Content.ReadAsStringAsync();
+                    logger.Debug($"\n记录内容: {content}");
                 }
             }
+        }
 
-            // 在这里处理选中的记录，例如下载它们
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            LoginWebview.CoreWebView2.CookieManager.DeleteAllCookies();
+            cookie = null;
+            personalHost = null;
+            LoginWebview.Visibility = Visibility.Visible;
+            RecordsList.Visibility = Visibility.Collapsed;
+            RecordsListHeader.Visibility = Visibility.Collapsed;
+            DownloadAll.Visibility = Visibility.Collapsed;
+            Logout.Visibility = Visibility.Collapsed;
+            LoginWebview.Source = new Uri("https://bytedance.feishu.cn/minutes/me");
+            var builder = new AppNotificationBuilder()
+                .AddText("退出登录完成，请重新登陆！");
+            var notificationManager = AppNotificationManager.Default;
+            notificationManager.Show(builder.BuildNotification());
         }
 
         private void LoginWebview_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
@@ -129,6 +168,10 @@ namespace FeiShuMinuteDownloader
                 personalHost = LoginWebview.Source.Host;
                 cookie = cookiesString;
                 LoginWebview.Visibility = Visibility.Collapsed;
+                RecordsList.Visibility = Visibility.Visible;
+                RecordsListHeader.Visibility = Visibility.Visible;
+                DownloadAll.Visibility = Visibility.Visible;
+                Logout.Visibility = Visibility.Visible;
                 await LoadFeishuData();
             }
         }
