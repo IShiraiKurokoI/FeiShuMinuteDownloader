@@ -29,6 +29,10 @@ using System.Text;
 using System.Net.Http.Headers;
 using Microsoft.Windows.AppNotifications.Builder;
 using Microsoft.Windows.AppNotifications;
+using Windows.Storage.Pickers;
+using Windows.Storage.AccessCache;
+using WinUICommunity;
+using System.Text.RegularExpressions;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -55,6 +59,7 @@ namespace FeiShuMinuteDownloader
         public MainWindow()
         {
             this.InitializeComponent();
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             int dpi = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
             m_AppWindow = this.AppWindow;
             m_AppWindow.Resize(new SizeInt32((int)(760 * (double)((double)dpi / (double)120)), (int)(720 * (double)((double)dpi / (double)120))));
@@ -94,39 +99,240 @@ namespace FeiShuMinuteDownloader
 
         private async void DownloadAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach(Record recordObject in Records)
+            // 显示文件夹选择对话框
+            FolderPicker openPicker = new Windows.Storage.Pickers.FolderPicker();
+            var window = this;
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
+            openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+            openPicker.FileTypeFilter.Add("*");
+            StorageFolder selectedFolder = await openPicker.PickSingleFolderAsync();
+
+            if (selectedFolder == null)
             {
-                string mediaUrl;
-                var baseAddress = new Uri($"https://{personalHost}");
-                using (var handler = new HttpClientHandler { UseCookies = false })
-                using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+                var builder1 = new AppNotificationBuilder()
+                    .AddText($"下载取消。");
+                var notificationManager1 = AppNotificationManager.Default;
+                notificationManager1.Show(builder1.BuildNotification());
+                return; // 用户取消了文件夹选择
+            }
+
+            string downloadFolder = selectedFolder.Path;
+
+            int totalFiles = Records.Count;
+            int completedFiles = 0;
+
+            foreach (Record recordObject in Records)
+            {
+                string mediaUrl = "";
+                string fileName = "";
+
+                try
                 {
-                    var message = new HttpRequestMessage(HttpMethod.Get, $"/minutes/api/status?object_token={recordObject.object_token}&language=zh_cn");
-                    message.Headers.Add("Cookie", cookie);
-                    message.Headers.Add("Referer", $"https://{personalHost}");
-                    var result = await client.SendAsync(message);
-                    result.EnsureSuccessStatusCode();
-                    var content = await result.Content.ReadAsStringAsync();
-                    RecordDetail response = JsonConvert.DeserializeObject<RecordDetail>(content);
-                    mediaUrl = response.data.video_info.video_download_url;
-                    logger.Debug($"\n视频/音频地址: {response.data.video_info.video_download_url}");
+                    // 第一部分：下载多媒体文件
+                    var baseAddress = new Uri($"https://{personalHost}");
+                    using (var handler = new HttpClientHandler { UseCookies = false })
+                    using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+                    {
+                        var message = new HttpRequestMessage(HttpMethod.Get, $"/minutes/api/status?object_token={recordObject.object_token}&language=zh_cn");
+                        message.Headers.Add("Cookie", cookie);
+                        message.Headers.Add("Referer", $"https://{personalHost}");
+                        var resultMessage = await client.SendAsync(message);
+                        resultMessage.EnsureSuccessStatusCode();
+                        var content = await resultMessage.Content.ReadAsStringAsync();
+                        RecordDetail response = JsonConvert.DeserializeObject<RecordDetail>(content);
+                        mediaUrl = response.data.video_info.video_download_url;
+                        logger.Debug($"\n视频/音频地址: {mediaUrl}");
+                    }
+
+                    // 下载多媒体文件到选定文件夹
+                    if (!string.IsNullOrEmpty(mediaUrl))
+                    {
+                        using (var handler = new HttpClientHandler { UseCookies = false })
+                        using (var httpClient = new HttpClient(handler) { BaseAddress = baseAddress })
+                        {
+                            httpClient.DefaultRequestHeaders.Add("Cookie", cookie);
+                            httpClient.DefaultRequestHeaders.Add("Referer", $"https://{personalHost}");
+
+                            // 发送GET请求以获取媒体内容
+                            using (var response = await httpClient.GetAsync(mediaUrl, HttpCompletionOption.ResponseHeadersRead))
+                            {
+                                response.EnsureSuccessStatusCode();
+
+                                // 解析 Content-Disposition 头
+                                var contentDisposition = response.Content.Headers.ContentDisposition;
+                                if (contentDisposition != null)
+                                {
+                                    // 尝试从 filename* 参数中获取 UTF-8 编码的文件名
+                                    fileName = contentDisposition.FileNameStar;
+                                    if (string.IsNullOrEmpty(fileName))
+                                    {
+                                        // 如果 filename* 参数为空，则回退到 filename 参数
+                                        fileName = DecodeFileName(contentDisposition.FileName);
+                                    }
+
+                                    // 解码 UTF-8 编码的文件名
+                                    if (!string.IsNullOrEmpty(fileName))
+                                    {
+                                        fileName = DecodeFileNameFromContentDisposition(fileName);
+                                    }
+                                }
+                                else
+                                {
+                                    // 如果 Content-Disposition 头不存在，使用 URL 中的文件名作为备选方案
+                                    fileName = Path.GetFileName(new Uri(mediaUrl).AbsolutePath);
+                                }
+                                // 确保文件名在下载文件夹中是唯一的
+                                string filePath = Path.Combine(downloadFolder,fileName);
+                                logger.Debug($"多媒体文件下载位置 {filePath}");
+                                filePath = EnsureUniqueFileName(filePath);
+
+                                // 将文件内容流下载到磁盘
+                                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                                {
+                                    await response.Content.CopyToAsync(fileStream);
+                                }
+                            }
+                        }
+                    }
+
+                    // 第二部分：下载文本内容
+                    using (var handler = new HttpClientHandler { UseCookies = false })
+                    using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+                    {
+                        var message = new HttpRequestMessage(HttpMethod.Post, $"/minutes/api/export");
+                        message.Headers.Add("Cookie", cookie);
+                        message.Headers.Add("Referer", $"https://{personalHost}/minutes/{recordObject.object_token}");
+                        message.Headers.Add("bv-csrf-token", cookie.Split("bv_csrf_token=")[1].Split(";")[0]);
+                        message.Headers.Add("Accept", "text/plain;charset=utf-8");
+                        message.Content = new StringContent($"add_speaker=true&add_timestamp=true&format=2&is_fluent=false&language=zh_cn&object_token={recordObject.object_token}&translate_lang=default", Encoding.UTF8, new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded"));
+
+                        var resultMessage = await client.SendAsync(message);
+                        resultMessage.EnsureSuccessStatusCode();
+                        var content = await resultMessage.Content.ReadAsStringAsync();
+
+                        var contentDisposition = resultMessage.Content.Headers.ContentDisposition;
+                        if (contentDisposition != null)
+                        {
+                            // 尝试从 filename* 参数中获取 UTF-8 编码的文件名
+                            fileName = contentDisposition.FileNameStar;
+                            if (string.IsNullOrEmpty(fileName))
+                            {
+                                // 如果 filename* 参数为空，则回退到 filename 参数
+                                fileName = DecodeFileName(contentDisposition.FileName);
+                            }
+
+                            // 解码 UTF-8 编码的文件名
+                            if (!string.IsNullOrEmpty(fileName))
+                            {
+                                fileName = DecodeFileNameFromContentDisposition(fileName);
+                            }
+                        }
+                        else
+                        {
+                            // 如果 Content-Disposition 头不存在，使用 URL 中的文件名作为备选方案
+                            fileName = Path.GetFileName(new Uri(mediaUrl).AbsolutePath);
+                        }
+
+                        // 确保文件名在下载文件夹中是唯一的
+                        string filePath = Path.Combine(downloadFolder, fileName);
+                        logger.Debug($"文本文件下载位置 {filePath}");
+                        filePath = EnsureUniqueFileName(filePath);
+
+                        // 写入文本内容到文件
+                        File.WriteAllText(filePath, content);
+                    }
+
+                    completedFiles++;
+
+                    var builder1 = new AppNotificationBuilder()
+                        .AddText($"文件 {recordObject.topic} 下载完成。");
+                    var notificationManager1 = AppNotificationManager.Default;
+                    notificationManager1.Show(builder1.BuildNotification());
                 }
-
-                using (var handler = new HttpClientHandler { UseCookies = false })
-                using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+                catch (HttpRequestException ex)
                 {
-                    var message = new HttpRequestMessage(HttpMethod.Post, $"/minutes/api/export");
-                    message.Headers.Add("Cookie", cookie);
-                    message.Headers.Add("Referer", $"https://{personalHost}/minutes/{recordObject.object_token}");
-                    message.Headers.Add("bv-csrf-token", cookie.Split("bv_csrf_token=")[1].Split(";")[0]);
+                    var errorText = $"无法下载记录文件: {recordObject.topic}\n错误: {ex.Message}";
+                    logger.Error(errorText);
 
-                    message.Content = new StringContent($"add_speaker=true&add_timestamp=true&format=2&is_fluent=false&language=zh_cn&object_token={recordObject.object_token}&translate_lang=default", Encoding.UTF8, new MediaTypeHeaderValue("application/x-www-form-urlencoded"));
-                    var result = await client.SendAsync(message);
-                    result.EnsureSuccessStatusCode();
-                    var content = await result.Content.ReadAsStringAsync();
-                    logger.Debug($"\n记录内容: {content}");
+                    var builder1 = new AppNotificationBuilder()
+                        .AddText($"文件 {recordObject.topic} 下载失败。");
+                    var notificationManager1 = AppNotificationManager.Default;
+                    notificationManager1.Show(builder1.BuildNotification());
+                }
+                catch (Exception ex)
+                {
+                    var errorText = $"发生错误: {ex.Message}";
+                    logger.Error(errorText);
+
+                    var builder1 = new AppNotificationBuilder()
+                        .AddText($"文件 {fileName} 下载失败。");
+                    var notificationManager1 = AppNotificationManager.Default;
+                    notificationManager1.Show(builder1.BuildNotification());
                 }
             }
+
+            var builder = new AppNotificationBuilder()
+                .AddText("下载完成！");
+            var notificationManager = AppNotificationManager.Default;
+            notificationManager.Show(builder.BuildNotification());
+        }
+
+        static string DecodeFileName(string filename)
+        {
+            filename = filename.Trim('\"');
+            byte[] utf8Bytes = Encoding.UTF8.GetBytes(filename);
+            byte[] windows1252Bytes = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding("ISO-8859-1"), utf8Bytes);
+            string output = Encoding.UTF8.GetString(windows1252Bytes);
+            return output;
+        }
+
+        // 解码 UTF-8 编码的文件名
+        private static string DecodeFileNameFromContentDisposition(string fileName)
+        {
+            // 从 filename* 参数中解析 UTF-8 编码的文件名
+            const string utf8EncodingPrefix = "UTF-8''";
+            if (fileName.StartsWith(utf8EncodingPrefix))
+            {
+                fileName = fileName.Substring(utf8EncodingPrefix.Length);
+
+                try
+                {
+                    // 解码 UTF-8 编码的文件名
+                    fileName = Uri.UnescapeDataString(fileName);
+                    fileName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(fileName));
+                }
+                catch (Exception ex)
+                {
+                    // 处理解码异常
+                    Console.WriteLine($"无法解码文件名: {ex.Message}");
+                }
+            }
+
+            return fileName;
+        }
+
+        private string EnsureUniqueFileName(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                string directory = Path.GetDirectoryName(filePath);
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+                string fileExtension = Path.GetExtension(filePath);
+
+                int count = 1;
+                string newFilePath = Path.Combine(directory, $"{fileNameWithoutExtension}_{count}{fileExtension}");
+
+                while (File.Exists(newFilePath))
+                {
+                    count++;
+                    newFilePath = Path.Combine(directory, $"{fileNameWithoutExtension}_{count}{fileExtension}");
+                }
+
+                return newFilePath;
+            }
+
+            return filePath;
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)

@@ -47,5 +47,7 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+	  <rescap:Capability Name="broadFileSystemAccess" />
+	  <Capability Name="internetClient"/>
   </Capabilities>
 </Package>
