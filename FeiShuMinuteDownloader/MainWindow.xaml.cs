@@ -182,6 +182,7 @@ namespace FeiShuMinuteDownloader
                                     // 如果 Content-Disposition 头不存在，使用 URL 中的文件名作为备选方案
                                     fileName = Path.GetFileName(new Uri(mediaUrl).AbsolutePath);
                                 }
+                                fileName = $"({recordObject.topic})" + fileName;
                                 // 确保文件名在下载文件夹中是唯一的
                                 string filePath = Path.Combine(downloadFolder,fileName);
                                 logger.Debug($"多媒体文件下载位置 {filePath}");
@@ -234,6 +235,8 @@ namespace FeiShuMinuteDownloader
                             fileName = Path.GetFileName(new Uri(mediaUrl).AbsolutePath);
                         }
 
+                        fileName = $"({recordObject.topic})" + fileName;
+
                         // 确保文件名在下载文件夹中是唯一的
                         string filePath = Path.Combine(downloadFolder, fileName);
                         logger.Debug($"文本文件下载位置 {filePath}");
@@ -246,7 +249,7 @@ namespace FeiShuMinuteDownloader
                     completedFiles++;
 
                     var builder1 = new AppNotificationBuilder()
-                        .AddText($"文件 {recordObject.topic} 下载完成。");
+                        .AddText($"记录 {recordObject.topic} 下载完成。");
                     var notificationManager1 = AppNotificationManager.Default;
                     notificationManager1.Show(builder1.BuildNotification());
                 }
