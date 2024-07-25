@@ -37,6 +37,12 @@ namespace FeiShuMinuteDownloader
         /// </summary>
         public App()
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
+            logger.Info("日志记录初始化成功");
+            DeleteLog();
+            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            App.Current.UnhandledException += App_UnhandledException;
             this.InitializeComponent();
         }
 
@@ -49,29 +55,29 @@ namespace FeiShuMinuteDownloader
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
             logger.Info("--------程序启动--------");
-            logger.Info("日志记录初始化成功");
-            DeleteLog();
             Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--proxy-server=\"direct://\"");
             Environment.SetEnvironmentVariable("WEBVIEW2_USE_VISUAL_HOSTING_FOR_OWNED_WINDOWS", "1");
             logger.Info("WebView参数初始化成功");
-            //Task线程内未捕获异常处理事件
-            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-            //非UI线程未捕获异常处理事件(例如自己创建的一个子线程)
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-            //全局异常捕获
-            App.Current.UnhandledException += App_UnhandledException;
-            Application.Current.UnhandledException += App_UnhandledException;
-
-            ElementTheme SettingsTheme = ElementTheme.Light;
 
             m_window = new MainWindow();
 
             themeService = new ThemeService();
             themeService.Initialize(m_window);
             themeService.ConfigBackdrop(BackdropType.AcrylicThin);
-            themeService.ConfigElementTheme(SettingsTheme);
+            themeService.ConfigElementTheme(ElementTheme.Light);
+            themeService.ConfigTitleBar(new TitleBarCustomization
+            {
+                TitleBarWindowType = TitleBarWindowType.AppWindow,
+                LightTitleBarButtons = new TitleBarButtons
+                {
+                    ButtonBackgroundColor = Colors.Transparent
+                },
+                DarkTitleBarButtons = new TitleBarButtons
+                {
+                    ButtonBackgroundColor = Colors.Transparent
+                }
+            });
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(m_window);
             Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);

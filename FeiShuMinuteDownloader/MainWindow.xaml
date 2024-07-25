@@ -9,11 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:FeiShuMinuteDownloader.converters"
     mc:Ignorable="d">
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Grid.Resources>
-            <converters:TimestampToDateConverter x:Key="TimestampToDateConverter"/>
-            <converters:WidthConverter x:Key="WidthConverter"/>
-        </Grid.Resources>
+    <Grid  Name="Root" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <WebView2 x:Name="LoginWebview" 
                   Source="https://bytedance.feishu.cn/minutes/me" 
                   HorizontalAlignment="Stretch" 

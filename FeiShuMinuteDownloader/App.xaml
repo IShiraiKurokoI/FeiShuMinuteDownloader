@@ -8,10 +8,11 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
                 <ResourceDictionary Source="ms-appx:///WinUICommunity.Components/Themes/Generic.xaml"/>
+                <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+            <x:Double x:Key="Breakpoint640Plus">641</x:Double>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

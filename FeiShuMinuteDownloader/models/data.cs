@@ -8,7 +8,7 @@ using static FeiShuMinuteDownloader.models.MinuteListApiResponse;
 namespace FeiShuMinuteDownloader.models
 {
 
-    public class data
+    public class Data
     {
         public string timestamp { get; set; }
         public int size { get; set; }
