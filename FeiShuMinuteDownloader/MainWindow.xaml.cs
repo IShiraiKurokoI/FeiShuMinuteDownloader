@@ -134,6 +134,8 @@ namespace FeiShuMinuteDownloader
             LoginWebview.CoreWebView2.CookieManager.DeleteAllCookies();
             cookie = null;
             personalHost = null;
+            Records = null;
+            RecordsList.ItemsSource = Records;
             LoginWebview.Visibility = Visibility.Visible;
             RecordsList.Visibility = Visibility.Collapsed;
             RecordsListHeader.Visibility = Visibility.Collapsed;

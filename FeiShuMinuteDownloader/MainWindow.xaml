@@ -21,19 +21,19 @@
                   CoreWebView2Initialized="LoginWebview_CoreWebView2Initialized" 
                   NavigationCompleted="LoginWebview_NavigationCompleted"/>
         <StackPanel x:Name="RecordsListHeader" Visibility="Collapsed" Orientation="Horizontal" Margin="20,20,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="LightGray" Height="40">
-            <TextBlock Text="名称" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
-            <TextBlock Text="开始时间" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
-            <TextBlock Text="结束时间" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
-            <TextBlock Text="所有者" Width="{Binding ElementName=ParentGrid, Path=ActualWidth, Converter={StaticResource WidthConverter}}"  Margin="10,0"/>
+            <TextBlock Text="名称" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
+            <TextBlock Text="开始时间" Width="110" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
+            <TextBlock Text="结束时间" Width="110" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
+            <TextBlock Text="所有者" Width="110" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
         </StackPanel>
         <ListBox x:Name="RecordsList" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,60,20,60">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="dataModels:Record">
                     <StackPanel Orientation="Horizontal" Margin="5">
-                        <TextBlock Text="{x:Bind topic}" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind start_time}" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind stop_time}" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind owner_name}" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind topic}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind start_time}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind stop_time}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
+                        <TextBlock Text="{x:Bind owner_name}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
