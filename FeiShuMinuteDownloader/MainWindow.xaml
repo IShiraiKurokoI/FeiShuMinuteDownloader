@@ -34,6 +34,7 @@
             CanUserSortColumns="True"
             IsReadOnly="True"
             ItemsSource="{x:Bind Records}"
+            SelectionMode="Extended"
             Visibility="Collapsed">
             <wck:DataGrid.Resources>
                 <Style x:Key="CenteredTextBlockStyle" TargetType="TextBlock">
@@ -68,11 +69,12 @@
         <Grid
             x:Name="BottomBar"
             Height="40"
-            Margin="0,0,0,0"
+            Margin="20"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
-            Visibility="Collapsed">
+            Visibility="Visible">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -82,27 +84,56 @@
                 Grid.Column="0"
                 Width="80"
                 Margin="0,0,20,0"
-                HorizontalAlignment="Right"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
                 Click="DownloadAll_Click"
-                Content="下载全部"
-                Visibility="Collapsed" />
-            <ProgressBar
-                x:Name="DownloadProgress"
+                Content="下载全部" />
+            <Button
+                x:Name="DownloadSelected"
                 Grid.Column="1"
-                Margin="0,0,0,0"
+                Width="80"
+                Margin="0,0,20,0"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
-                Visibility="Collapsed" />
+                Click="DownloadSelected_Click"
+                Content="下载选中" />
+            <Grid
+                Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ProgressBar
+                    x:Name="DownloadProgress"
+                    Grid.Column="0"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Stretch"
+                    Maximum="100"
+                    Value="0" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="下载状态" />
+                <TextBlock
+                    x:Name="StatusText"
+                    Grid.Column="2"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="" />
+            </Grid>
             <Button
                 x:Name="Logout"
-                Grid.Column="2"
+                Grid.Column="4"
                 Width="80"
                 Margin="20,0,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
                 Click="Logout_Click"
-                Content="退出登录"
-                Visibility="Collapsed" />
+                Content="退出登录" />
         </Grid>
     </Grid>
 </Window>

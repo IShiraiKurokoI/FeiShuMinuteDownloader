@@ -96,6 +96,20 @@ namespace FeiShuMinuteDownloader
                 Content = new TextBlock { Text = $"Error: {ex.Message} \n {ex.StackTrace}" };
             }
         }
+        private async void DownloadSelected_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedRecords = RecordsDataGrid.SelectedItems.Cast<Record>().ToList();
+            if (selectedRecords.Count == 0)
+            {
+                var builder1 = new AppNotificationBuilder()
+                    .AddText("没有选中任何记录。");
+                var notificationManager1 = AppNotificationManager.Default;
+                notificationManager1.Show(builder1.BuildNotification());
+                return;
+            }
+
+            await DownloadRecordsAsync(selectedRecords);
+        }
 
         private async void DownloadAll_Click(object sender, RoutedEventArgs e)
         {
@@ -123,9 +137,12 @@ namespace FeiShuMinuteDownloader
             }
 
             string downloadFolder = selectedFolder.Path;
-
-            int totalFiles = records.Count;
+            int totalFiles = records.Count * 2; // 每个记录有两个文件
             int completedFiles = 0;
+
+            DownloadProgress.Minimum = 0;
+            DownloadProgress.Maximum = totalFiles;
+            DownloadProgress.Value = 0;
 
             foreach (Record recordObject in records)
             {
@@ -134,6 +151,8 @@ namespace FeiShuMinuteDownloader
 
                 try
                 {
+                    StatusText.Text = $"正在下载多媒体文件: {recordObject.topic}";
+
                     // 第一部分：下载多媒体文件
                     var baseAddress = new Uri($"https://{personalHost}");
                     using (var handler = new HttpClientHandler { UseCookies = false })
@@ -202,6 +221,11 @@ namespace FeiShuMinuteDownloader
                         }
                     }
 
+                    completedFiles++;
+                    DownloadProgress.Value = completedFiles;
+
+                    StatusText.Text = $"正在下载文本文件: {recordObject.topic}";
+
                     // 第二部分：下载文本内容
                     using (var handler = new HttpClientHandler { UseCookies = false })
                     using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
@@ -252,6 +276,7 @@ namespace FeiShuMinuteDownloader
                     }
 
                     completedFiles++;
+                    DownloadProgress.Value = completedFiles;
 
                     var builder1 = new AppNotificationBuilder()
                         .AddText($"记录 {recordObject.topic} 下载完成。");
@@ -264,7 +289,7 @@ namespace FeiShuMinuteDownloader
                     logger.Error(errorText);
 
                     var builder1 = new AppNotificationBuilder()
-                        .AddText($"记录 {recordObject.topic} 下载失败。");
+                        .AddText($"文件 {recordObject.topic} 下载失败。");
                     var notificationManager1 = AppNotificationManager.Default;
                     notificationManager1.Show(builder1.BuildNotification());
                 }
@@ -274,16 +299,20 @@ namespace FeiShuMinuteDownloader
                     logger.Error(errorText);
 
                     var builder1 = new AppNotificationBuilder()
-                        .AddText($"记录 {fileName} 下载失败。");
+                        .AddText($"文件 {fileName} 下载失败。");
                     var notificationManager1 = AppNotificationManager.Default;
                     notificationManager1.Show(builder1.BuildNotification());
                 }
             }
 
             var builder = new AppNotificationBuilder()
-                .AddText("下载完成！");
+                .AddText("全部记录下载完成！");
             var notificationManager = AppNotificationManager.Default;
             notificationManager.Show(builder.BuildNotification());
+
+            DownloadProgress.Maximum = 100;
+            DownloadProgress.Value = 0;
+            StatusText.Text = "全部记录下载完成";
         }
 
         static string DecodeFileName(string filename)
@@ -353,9 +382,6 @@ namespace FeiShuMinuteDownloader
             LoginWebview.Visibility = Visibility.Visible;
             RecordsDataGrid.Visibility = Visibility.Collapsed;
             BottomBar.Visibility = Visibility.Collapsed;
-            DownloadAll.Visibility = Visibility.Collapsed;
-            DownloadProgress.Visibility = Visibility.Collapsed;
-            Logout.Visibility = Visibility.Collapsed;
             LoginWebview.Source = new Uri("https://bytedance.feishu.cn/minutes/me");
             var builder = new AppNotificationBuilder()
                 .AddText("退出登录完成，请重新登陆！");
@@ -387,9 +413,6 @@ namespace FeiShuMinuteDownloader
                 LoginWebview.Visibility = Visibility.Collapsed;
                 RecordsDataGrid.Visibility = Visibility.Visible;
                 BottomBar.Visibility = Visibility.Visible;
-                DownloadAll.Visibility = Visibility.Visible;
-                DownloadProgress.Visibility = Visibility.Visible;
-                Logout.Visibility = Visibility.Visible;
                 await LoadFeishuData();
             }
         }

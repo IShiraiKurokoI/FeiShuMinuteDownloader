@@ -2,11 +2,11 @@
   "profiles": {
     "FeiShuMinuteDownloader (Package)": {
       "commandName": "MsixPackage",
-      "nativeDebugging": true
+      "nativeDebugging": false
     },
     "FeiShuMinuteDownloader (Unpackaged)": {
       "commandName": "Project",
-      "nativeDebugging": true
+      "nativeDebugging": false
     }
   }
 }
