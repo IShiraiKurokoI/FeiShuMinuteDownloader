@@ -58,7 +58,6 @@ namespace FeiShuMinuteDownloader
 
         public MainWindow()
         {
-            this.InitializeComponent();
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             int dpi = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
             m_AppWindow = this.AppWindow;
@@ -68,6 +67,8 @@ namespace FeiShuMinuteDownloader
             OverlappedPresenter overlappedPresenter = AppWindow.Presenter as OverlappedPresenter ?? Microsoft.UI.Windowing.OverlappedPresenter.Create();
             overlappedPresenter.IsResizable = false;
             logger = NLog.LogManager.GetCurrentClassLogger();
+            this.InitializeComponent();
+            appTitleBar.Window = this;
         }
         public ObservableCollection<Record> Records { get; set; }
 

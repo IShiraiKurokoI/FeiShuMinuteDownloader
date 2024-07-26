@@ -18,8 +18,23 @@
         <Grid.Resources>
             <converters:TimestampToDateTimeConverter x:Key="TimestampToDateTimeConverter" />
         </Grid.Resources>
+        <wuc:TitleBar
+            x:Name="appTitleBar"
+            Title="飞书妙记记录下载器"
+            Height="40"
+            VerticalAlignment="Top"
+            IsBackButtonVisible="False"
+            IsDoubleTapEnabled="False"
+            IsMaximizable="False"
+            IsPaneButtonVisible="False">
+            <wuc:TitleBar.Icon>
+                <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/logo.ico" />
+            </wuc:TitleBar.Icon>
+        </wuc:TitleBar>
+
         <WebView2
             x:Name="LoginWebview"
+            Margin="0,40,0,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             CoreWebView2Initialized="LoginWebview_CoreWebView2Initialized"
@@ -27,7 +42,7 @@
             Source="https://bytedance.feishu.cn/minutes/me" />
         <wck:DataGrid
             x:Name="RecordsDataGrid"
-            Margin="20"
+            Margin="20,40,20,20"
             AutoGenerateColumns="False"
             CanUserReorderColumns="False"
             CanUserResizeColumns="True"
