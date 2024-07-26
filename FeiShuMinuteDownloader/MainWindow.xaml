@@ -87,7 +87,7 @@
             Margin="20"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
-            Visibility="Visible">
+            Visibility="Collapsed">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
