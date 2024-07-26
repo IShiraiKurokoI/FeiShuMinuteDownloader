@@ -62,7 +62,7 @@ namespace FeiShuMinuteDownloader
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             int dpi = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
             m_AppWindow = this.AppWindow;
-            m_AppWindow.Resize(new SizeInt32((int)(760 * (double)((double)dpi / (double)120)), (int)(720 * (double)((double)dpi / (double)120))));
+            m_AppWindow.Resize(new SizeInt32((int)(900 * (double)((double)dpi / (double)120)), (int)(800 * (double)((double)dpi / (double)120))));
             m_AppWindow.SetIcon("ms-appx:///Assets/logo.ico");
             this.Title = "∑… È√Óº«œ¬‘ÿ∆˜";
             OverlappedPresenter overlappedPresenter = AppWindow.Presenter as OverlappedPresenter ?? Microsoft.UI.Windowing.OverlappedPresenter.Create();
@@ -88,7 +88,7 @@ namespace FeiShuMinuteDownloader
 
                     MinuteListApiResponse response = JsonConvert.DeserializeObject<MinuteListApiResponse>(content);
                     Records = new ObservableCollection<Record>(response.data.list);
-                    RecordsList.ItemsSource = Records;
+                    RecordsDataGrid.ItemsSource = Records;
                 }
             }
             catch (Exception ex)
@@ -344,11 +344,12 @@ namespace FeiShuMinuteDownloader
             cookie = null;
             personalHost = null;
             Records = null;
-            RecordsList.ItemsSource = Records;
+            RecordsDataGrid.ItemsSource = Records;
             LoginWebview.Visibility = Visibility.Visible;
-            RecordsList.Visibility = Visibility.Collapsed;
-            RecordsListHeader.Visibility = Visibility.Collapsed;
+            RecordsDataGrid.Visibility = Visibility.Collapsed;
+            BottomBar.Visibility = Visibility.Collapsed;
             DownloadAll.Visibility = Visibility.Collapsed;
+            DownloadProgress.Visibility = Visibility.Collapsed;
             Logout.Visibility = Visibility.Collapsed;
             LoginWebview.Source = new Uri("https://bytedance.feishu.cn/minutes/me");
             var builder = new AppNotificationBuilder()
@@ -379,9 +380,10 @@ namespace FeiShuMinuteDownloader
                 personalHost = LoginWebview.Source.Host;
                 cookie = cookiesString;
                 LoginWebview.Visibility = Visibility.Collapsed;
-                RecordsList.Visibility = Visibility.Visible;
-                RecordsListHeader.Visibility = Visibility.Visible;
+                RecordsDataGrid.Visibility = Visibility.Visible;
+                BottomBar.Visibility = Visibility.Visible;
                 DownloadAll.Visibility = Visibility.Visible;
+                DownloadProgress.Visibility = Visibility.Visible;
                 Logout.Visibility = Visibility.Visible;
                 await LoadFeishuData();
             }

@@ -8,11 +8,16 @@
     xmlns:dataModels="using:FeiShuMinuteDownloader.models"
     xmlns:local="using:FeiShuMinuteDownloader"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:wck="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:wuc="using:WinUICommunity"
     mc:Ignorable="d">
     <Grid
         Name="Root"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
+        <Grid.Resources>
+            <converters:TimestampToDateTimeConverter x:Key="TimestampToDateTimeConverter" />
+        </Grid.Resources>
         <WebView2
             x:Name="LoginWebview"
             HorizontalAlignment="Stretch"
@@ -20,92 +25,84 @@
             CoreWebView2Initialized="LoginWebview_CoreWebView2Initialized"
             NavigationCompleted="LoginWebview_NavigationCompleted"
             Source="https://bytedance.feishu.cn/minutes/me" />
-        <StackPanel
-            x:Name="RecordsListHeader"
+        <wck:DataGrid
+            x:Name="RecordsDataGrid"
+            Margin="20"
+            AutoGenerateColumns="False"
+            CanUserReorderColumns="False"
+            CanUserResizeColumns="True"
+            CanUserSortColumns="True"
+            IsReadOnly="True"
+            ItemsSource="{x:Bind Records}"
+            Visibility="Collapsed">
+            <wck:DataGrid.Resources>
+                <Style x:Key="CenteredTextBlockStyle" TargetType="TextBlock">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+            </wck:DataGrid.Resources>
+            <wck:DataGrid.Columns>
+                <wck:DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding topic}"
+                    ElementStyle="{StaticResource CenteredTextBlockStyle}"
+                    Header="名称" />
+                <wck:DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding start_time, Converter={StaticResource TimestampToDateTimeConverter}}"
+                    ElementStyle="{StaticResource CenteredTextBlockStyle}"
+                    Header="开始时间" />
+                <wck:DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding stop_time, Converter={StaticResource TimestampToDateTimeConverter}}"
+                    ElementStyle="{StaticResource CenteredTextBlockStyle}"
+                    Header="结束时间" />
+                <wck:DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding owner_name}"
+                    ElementStyle="{StaticResource CenteredTextBlockStyle}"
+                    Header="所有者" />
+            </wck:DataGrid.Columns>
+        </wck:DataGrid>
+        <Grid
+            x:Name="BottomBar"
             Height="40"
-            Margin="20,20,20,0"
+            Margin="0,0,0,0"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Top"
-            Background="LightGray"
-            Orientation="Horizontal"
-            Visibility="Collapsed">
-            <TextBlock
-                Width="100"
-                Margin="10,0"
-                HorizontalAlignment="Center"
-                HorizontalTextAlignment="Center"
-                Text="名称" />
-            <TextBlock
-                Width="110"
-                Margin="10,0"
-                HorizontalAlignment="Center"
-                HorizontalTextAlignment="Center"
-                Text="开始时间" />
-            <TextBlock
-                Width="110"
-                Margin="10,0"
-                HorizontalAlignment="Center"
-                HorizontalTextAlignment="Center"
-                Text="结束时间" />
-            <TextBlock
-                Width="110"
-                Margin="10,0"
-                HorizontalAlignment="Center"
-                HorizontalTextAlignment="Center"
-                Text="所有者" />
-        </StackPanel>
-        <ListBox
-            x:Name="RecordsList"
-            Margin="20,60,20,60"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Visibility="Collapsed">
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="dataModels:Record">
-                    <StackPanel Margin="5" Orientation="Horizontal">
-                        <TextBlock
-                            Width="100"
-                            Margin="10,0"
-                            HorizontalAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            Text="{x:Bind topic}" />
-                        <TextBlock
-                            Width="100"
-                            Margin="10,0"
-                            HorizontalAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            Text="{x:Bind start_time}" />
-                        <TextBlock
-                            Width="100"
-                            Margin="10,0"
-                            HorizontalAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            Text="{x:Bind stop_time}" />
-                        <TextBlock
-                            Width="100"
-                            Margin="10,0"
-                            HorizontalAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            Text="{x:Bind owner_name}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Button
-            x:Name="DownloadAll"
-            Margin="0,0,20,20"
-            HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            Click="DownloadAll_Click"
-            Content="下载全部"
-            Visibility="Collapsed" />
-        <Button
-            x:Name="Logout"
-            Margin="20,0,0,20"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Bottom"
-            Click="Logout_Click"
-            Content="退出登录"
-            Visibility="Collapsed" />
+            Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="DownloadAll"
+                Grid.Column="0"
+                Width="80"
+                Margin="0,0,20,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                Click="DownloadAll_Click"
+                Content="下载全部"
+                Visibility="Collapsed" />
+            <ProgressBar
+                x:Name="DownloadProgress"
+                Grid.Column="1"
+                Margin="0,0,0,0"
+                VerticalAlignment="Stretch"
+                Visibility="Collapsed" />
+            <Button
+                x:Name="Logout"
+                Grid.Column="2"
+                Width="80"
+                Margin="20,0,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
+                Click="Logout_Click"
+                Content="退出登录"
+                Visibility="Collapsed" />
+        </Grid>
     </Grid>
 </Window>
