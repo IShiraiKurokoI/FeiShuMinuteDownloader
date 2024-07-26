@@ -1,40 +1,111 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="FeiShuMinuteDownloader.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:FeiShuMinuteDownloader"
-    xmlns:dataModels="using:FeiShuMinuteDownloader.models"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:FeiShuMinuteDownloader.converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataModels="using:FeiShuMinuteDownloader.models"
+    xmlns:local="using:FeiShuMinuteDownloader"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid  Name="Root" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <WebView2 x:Name="LoginWebview" 
-                  Source="https://bytedance.feishu.cn/minutes/me" 
-                  HorizontalAlignment="Stretch" 
-                  VerticalAlignment="Stretch" 
-                  CoreWebView2Initialized="LoginWebview_CoreWebView2Initialized" 
-                  NavigationCompleted="LoginWebview_NavigationCompleted"/>
-        <StackPanel x:Name="RecordsListHeader" Visibility="Collapsed" Orientation="Horizontal" Margin="20,20,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="LightGray" Height="40">
-            <TextBlock Text="名称" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
-            <TextBlock Text="开始时间" Width="110" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
-            <TextBlock Text="结束时间" Width="110" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
-            <TextBlock Text="所有者" Width="110" HorizontalTextAlignment="Center" HorizontalAlignment="Center"  Margin="10,0"/>
+    <Grid
+        Name="Root"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <WebView2
+            x:Name="LoginWebview"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            CoreWebView2Initialized="LoginWebview_CoreWebView2Initialized"
+            NavigationCompleted="LoginWebview_NavigationCompleted"
+            Source="https://bytedance.feishu.cn/minutes/me" />
+        <StackPanel
+            x:Name="RecordsListHeader"
+            Height="40"
+            Margin="20,20,20,0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Background="LightGray"
+            Orientation="Horizontal"
+            Visibility="Collapsed">
+            <TextBlock
+                Width="100"
+                Margin="10,0"
+                HorizontalAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Text="名称" />
+            <TextBlock
+                Width="110"
+                Margin="10,0"
+                HorizontalAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Text="开始时间" />
+            <TextBlock
+                Width="110"
+                Margin="10,0"
+                HorizontalAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Text="结束时间" />
+            <TextBlock
+                Width="110"
+                Margin="10,0"
+                HorizontalAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Text="所有者" />
         </StackPanel>
-        <ListBox x:Name="RecordsList" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,60,20,60">
+        <ListBox
+            x:Name="RecordsList"
+            Margin="20,60,20,60"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Visibility="Collapsed">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="dataModels:Record">
-                    <StackPanel Orientation="Horizontal" Margin="5">
-                        <TextBlock Text="{x:Bind topic}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind start_time}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind stop_time}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
-                        <TextBlock Text="{x:Bind owner_name}" Width="100" HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="10,0"/>
+                    <StackPanel Margin="5" Orientation="Horizontal">
+                        <TextBlock
+                            Width="100"
+                            Margin="10,0"
+                            HorizontalAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            Text="{x:Bind topic}" />
+                        <TextBlock
+                            Width="100"
+                            Margin="10,0"
+                            HorizontalAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            Text="{x:Bind start_time}" />
+                        <TextBlock
+                            Width="100"
+                            Margin="10,0"
+                            HorizontalAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            Text="{x:Bind stop_time}" />
+                        <TextBlock
+                            Width="100"
+                            Margin="10,0"
+                            HorizontalAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            Text="{x:Bind owner_name}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button x:Name="DownloadAll" Visibility="Collapsed" Content="下载全部" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20" Click="DownloadAll_Click"/>
-        <Button x:Name="Logout" Visibility="Collapsed" Content="退出登录" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,20" Click="Logout_Click"/>
+        <Button
+            x:Name="DownloadAll"
+            Margin="0,0,20,20"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Click="DownloadAll_Click"
+            Content="下载全部"
+            Visibility="Collapsed" />
+        <Button
+            x:Name="Logout"
+            Margin="20,0,0,20"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Click="Logout_Click"
+            Content="退出登录"
+            Visibility="Collapsed" />
     </Grid>
 </Window>
