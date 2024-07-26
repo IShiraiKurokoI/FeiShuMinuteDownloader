@@ -99,6 +99,11 @@ namespace FeiShuMinuteDownloader
 
         private async void DownloadAll_Click(object sender, RoutedEventArgs e)
         {
+            await DownloadRecordsAsync(Records);
+        }
+
+        private async Task DownloadRecordsAsync(IList<Record> records)
+        {
             // 显示文件夹选择对话框
             FolderPicker openPicker = new Windows.Storage.Pickers.FolderPicker();
             var window = this;
@@ -119,10 +124,10 @@ namespace FeiShuMinuteDownloader
 
             string downloadFolder = selectedFolder.Path;
 
-            int totalFiles = Records.Count;
+            int totalFiles = records.Count;
             int completedFiles = 0;
 
-            foreach (Record recordObject in Records)
+            foreach (Record recordObject in records)
             {
                 string mediaUrl = "";
                 string fileName = "";
@@ -184,7 +189,7 @@ namespace FeiShuMinuteDownloader
                                 }
                                 fileName = $"({recordObject.topic})" + fileName;
                                 // 确保文件名在下载文件夹中是唯一的
-                                string filePath = Path.Combine(downloadFolder,fileName);
+                                string filePath = Path.Combine(downloadFolder, fileName);
                                 logger.Debug($"多媒体文件下载位置 {filePath}");
                                 filePath = EnsureUniqueFileName(filePath);
 
@@ -259,7 +264,7 @@ namespace FeiShuMinuteDownloader
                     logger.Error(errorText);
 
                     var builder1 = new AppNotificationBuilder()
-                        .AddText($"文件 {recordObject.topic} 下载失败。");
+                        .AddText($"记录 {recordObject.topic} 下载失败。");
                     var notificationManager1 = AppNotificationManager.Default;
                     notificationManager1.Show(builder1.BuildNotification());
                 }
@@ -269,7 +274,7 @@ namespace FeiShuMinuteDownloader
                     logger.Error(errorText);
 
                     var builder1 = new AppNotificationBuilder()
-                        .AddText($"文件 {fileName} 下载失败。");
+                        .AddText($"记录 {fileName} 下载失败。");
                     var notificationManager1 = AppNotificationManager.Default;
                     notificationManager1.Show(builder1.BuildNotification());
                 }
