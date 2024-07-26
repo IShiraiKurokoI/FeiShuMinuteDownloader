@@ -392,6 +392,7 @@ namespace FeiShuMinuteDownloader
         private void LoginWebview_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
         {
             LoginWebview.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = true;
+            LoginWebview.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = true;
             LoginWebview.CoreWebView2.Settings.IsPasswordAutosaveEnabled = true;
             LoginWebview.CoreWebView2.Settings.IsZoomControlEnabled = true;
             LoginWebview.CoreWebView2.Settings.IsGeneralAutofillEnabled = true;
