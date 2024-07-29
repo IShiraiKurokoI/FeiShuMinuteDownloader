@@ -10,7 +10,7 @@
   <Identity
     Name="71b23671-108d-4799-affd-1c70c656a3b2"
     Publisher="CN=Shirai_Kuroko"
-    Version="1.0.2.0" />
+    Version="1.0.3.0" />
 
   <mp:PhoneIdentity PhoneProductId="71b23671-108d-4799-affd-1c70c656a3b2" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
