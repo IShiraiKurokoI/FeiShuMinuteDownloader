@@ -102,7 +102,7 @@ namespace FeiShuMinuteDownloader
             try
             {
                 string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\FeiShuMinuteDownloader\\Log";
-                string logFilePrefix = "Log-DLUTToolBoxV3-";
+                string logFilePrefix = "Log-FeiShuMinuteDownloader-";
                 int daysThreshold = 3;
                 DateTime deletionDate = DateTime.Now.AddDays(-daysThreshold);
                 string[] logFiles = Directory.GetFiles(logDirectory, logFilePrefix + "*.log");
